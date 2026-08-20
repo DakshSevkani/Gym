@@ -1,4 +1,8 @@
 import API from './axios.js';
+import { memberApi } from './memberApi.js';
+import { trainerApi } from './trainerApi.js';
+import { paymentApi } from './paymentApi.js';
+import { userApi } from './userApi.js';
 
 export const dashboardApi = {
   // GET /dashboard & composite metrics from real backend database
@@ -12,41 +16,13 @@ export const dashboardApi = {
       console.warn('Dashboard endpoint error:', e);
     }
 
-    // 2. Get members list from backend
-    let membersList = [];
-    try {
-      const res = await API.get('/members');
-      membersList = Array.isArray(res.data) ? res.data : [];
-    } catch (e) {
-      console.warn('Members endpoint error:', e);
-    }
-
-    // 3. Get trainers list from backend
-    let trainersList = [];
-    try {
-      const res = await API.get('/trainers');
-      trainersList = Array.isArray(res.data) ? res.data : [];
-    } catch (e) {
-      console.warn('Trainers endpoint error:', e);
-    }
-
-    // 4. Get payments list from backend
-    let paymentsList = [];
-    try {
-      const res = await API.get('/payments');
-      paymentsList = Array.isArray(res.data) ? res.data : [];
-    } catch (e) {
-      console.warn('Payments endpoint error:', e);
-    }
-
-    // 5. Get users list from backend
-    let usersList = [];
-    try {
-      const res = await API.get('/users');
-      usersList = Array.isArray(res.data) ? res.data : [];
-    } catch (e) {
-      console.warn('Users endpoint error:', e);
-    }
+    // 2. Parallel data fetching with resilient fallbacks
+    const [membersList, trainersList, paymentsList, usersList] = await Promise.all([
+      memberApi.getMembers().catch(() => []),
+      trainerApi.getTrainers().catch(() => []),
+      paymentApi.getPayments().catch(() => []),
+      userApi.getUsers().catch(() => []),
+    ]);
 
     // Get current user from localStorage session
     const userStr = localStorage.getItem('powerhouse_user');
