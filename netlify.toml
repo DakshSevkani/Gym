@@ -4,25 +4,25 @@
 
 # Proxy API calls directly to Railway backend (eliminates browser CORS issues)
 [[redirects]]
-  from = "/api/users/login"
-  to = "https://gymmanagementsystem-production-72ab.up.railway.app/user/login"
-  status = 200
-  force = true
-
-[[redirects]]
   from = "/api/user/login"
   to = "https://gymmanagementsystem-production-72ab.up.railway.app/user/login"
   status = 200
   force = true
 
 [[redirects]]
-  from = "/api/users/register"
-  to = "https://gymmanagementsystem-production-72ab.up.railway.app/user/register"
+  from = "/api/users/login"
+  to = "https://gymmanagementsystem-production-72ab.up.railway.app/user/login"
   status = 200
   force = true
 
 [[redirects]]
   from = "/api/user/register"
+  to = "https://gymmanagementsystem-production-72ab.up.railway.app/user/register"
+  status = 200
+  force = true
+
+[[redirects]]
+  from = "/api/users/register"
   to = "https://gymmanagementsystem-production-72ab.up.railway.app/user/register"
   status = 200
   force = true
@@ -53,73 +53,37 @@
 
 [[redirects]]
   from = "/api/members"
-  to = "https://gymmanagementsystem-production-72ab.up.railway.app/member"
-  status = 200
-  force = true
-
-[[redirects]]
-  from = "/api/member"
-  to = "https://gymmanagementsystem-production-72ab.up.railway.app/member"
+  to = "https://gymmanagementsystem-production-72ab.up.railway.app/members"
   status = 200
   force = true
 
 [[redirects]]
   from = "/api/members/*"
-  to = "https://gymmanagementsystem-production-72ab.up.railway.app/member/:splat"
-  status = 200
-  force = true
-
-[[redirects]]
-  from = "/api/member/*"
-  to = "https://gymmanagementsystem-production-72ab.up.railway.app/member/:splat"
+  to = "https://gymmanagementsystem-production-72ab.up.railway.app/members/:splat"
   status = 200
   force = true
 
 [[redirects]]
   from = "/api/trainers"
-  to = "https://gymmanagementsystem-production-72ab.up.railway.app/trainer"
-  status = 200
-  force = true
-
-[[redirects]]
-  from = "/api/trainer"
-  to = "https://gymmanagementsystem-production-72ab.up.railway.app/trainer"
+  to = "https://gymmanagementsystem-production-72ab.up.railway.app/trainers"
   status = 200
   force = true
 
 [[redirects]]
   from = "/api/trainers/*"
-  to = "https://gymmanagementsystem-production-72ab.up.railway.app/trainer/:splat"
-  status = 200
-  force = true
-
-[[redirects]]
-  from = "/api/trainer/*"
-  to = "https://gymmanagementsystem-production-72ab.up.railway.app/trainer/:splat"
+  to = "https://gymmanagementsystem-production-72ab.up.railway.app/trainers/:splat"
   status = 200
   force = true
 
 [[redirects]]
   from = "/api/payments"
-  to = "https://gymmanagementsystem-production-72ab.up.railway.app/payment"
-  status = 200
-  force = true
-
-[[redirects]]
-  from = "/api/payment"
-  to = "https://gymmanagementsystem-production-72ab.up.railway.app/payment"
+  to = "https://gymmanagementsystem-production-72ab.up.railway.app/payments"
   status = 200
   force = true
 
 [[redirects]]
   from = "/api/payments/*"
-  to = "https://gymmanagementsystem-production-72ab.up.railway.app/payment/:splat"
-  status = 200
-  force = true
-
-[[redirects]]
-  from = "/api/payment/*"
-  to = "https://gymmanagementsystem-production-72ab.up.railway.app/payment/:splat"
+  to = "https://gymmanagementsystem-production-72ab.up.railway.app/payments/:splat"
   status = 200
   force = true
 
@@ -134,4 +98,5 @@
   from = "/*"
   to = "/index.html"
   status = 200
+
 

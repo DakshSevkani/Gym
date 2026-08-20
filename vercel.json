@@ -1,0 +1,68 @@
+{
+  "rewrites": [
+    {
+      "source": "/api/user/login",
+      "destination": "https://gymmanagementsystem-production-72ab.up.railway.app/user/login"
+    },
+    {
+      "source": "/api/users/login",
+      "destination": "https://gymmanagementsystem-production-72ab.up.railway.app/user/login"
+    },
+    {
+      "source": "/api/user/register",
+      "destination": "https://gymmanagementsystem-production-72ab.up.railway.app/user/register"
+    },
+    {
+      "source": "/api/users/register",
+      "destination": "https://gymmanagementsystem-production-72ab.up.railway.app/user/register"
+    },
+    {
+      "source": "/api/members",
+      "destination": "https://gymmanagementsystem-production-72ab.up.railway.app/members"
+    },
+    {
+      "source": "/api/members/:path*",
+      "destination": "https://gymmanagementsystem-production-72ab.up.railway.app/members/:path*"
+    },
+    {
+      "source": "/api/trainers",
+      "destination": "https://gymmanagementsystem-production-72ab.up.railway.app/trainers"
+    },
+    {
+      "source": "/api/trainers/:path*",
+      "destination": "https://gymmanagementsystem-production-72ab.up.railway.app/trainers/:path*"
+    },
+    {
+      "source": "/api/payments",
+      "destination": "https://gymmanagementsystem-production-72ab.up.railway.app/payments"
+    },
+    {
+      "source": "/api/payments/:path*",
+      "destination": "https://gymmanagementsystem-production-72ab.up.railway.app/payments/:path*"
+    },
+    {
+      "source": "/api/users",
+      "destination": "https://gymmanagementsystem-production-72ab.up.railway.app/user"
+    },
+    {
+      "source": "/api/users/:path*",
+      "destination": "https://gymmanagementsystem-production-72ab.up.railway.app/user/:path*"
+    },
+    {
+      "source": "/api/user",
+      "destination": "https://gymmanagementsystem-production-72ab.up.railway.app/user"
+    },
+    {
+      "source": "/api/user/:path*",
+      "destination": "https://gymmanagementsystem-production-72ab.up.railway.app/user/:path*"
+    },
+    {
+      "source": "/api/:path*",
+      "destination": "https://gymmanagementsystem-production-72ab.up.railway.app/:path*"
+    },
+    {
+      "source": "/(.*)",
+      "destination": "/index.html"
+    }
+  ]
+}

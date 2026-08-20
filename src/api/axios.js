@@ -1,14 +1,27 @@
 import axios from 'axios';
 
+// Remote Railway backend endpoint fallback
+export const DIRECT_RAILWAY_URL = 'https://gymmanagementsystem-production-72ab.up.railway.app';
+
 // Resolve base API URL from environment variable or fallback to local proxy '/api'
 const envApiUrl = import.meta.env.VITE_BACKEND_URL || import.meta.env.VITE_API_BASE_URL;
-const resolvedBaseURL = envApiUrl 
-  ? (envApiUrl.startsWith('http') && !envApiUrl.endsWith('/api') && !envApiUrl.includes('/api') ? `${envApiUrl.replace(/\/$/, '')}/api` : envApiUrl)
-  : '/api';
+
+function determineBaseURL() {
+  if (!envApiUrl) return '/api';
+  const clean = envApiUrl.trim().replace(/\/$/, '');
+  // If explicitly pointed to railway backend, use railway base without /api
+  if (clean.includes('railway.app') && !clean.endsWith('/api')) {
+    return clean;
+  }
+  return clean;
+}
+
+const resolvedBaseURL = determineBaseURL();
 
 // Centralized Axios instance connecting through API proxy or hosted backend
 const API = axios.create({
   baseURL: resolvedBaseURL,
+  timeout: 15000,
   headers: {
     'Content-Type': 'application/json',
   },
@@ -27,7 +40,7 @@ export const setApiCallbacks = (onToast, onLogout) => {
 API.interceptors.request.use(
   (config) => {
     const token = localStorage.getItem('powerhouse_jwt_token');
-    if (token) {
+    if (token && !config.headers.Authorization) {
       config.headers.Authorization = `Bearer ${token}`;
     }
     return config;
@@ -37,15 +50,59 @@ API.interceptors.request.use(
   }
 );
 
-// Response Interceptor: Handle errors and status codes
+// Response Interceptor: Handle HTML fallback from static hosting, errors, and auto-retry to Railway
 API.interceptors.response.use(
-  (response) => {
+  async (response) => {
+    // If a static host returned index.html for an API route, retry directly against Railway backend
+    if (
+      typeof response.data === 'string' &&
+      (response.data.includes('<!DOCTYPE html>') || response.data.includes('<html') || response.data.includes('<head>')) &&
+      response.config &&
+      !response.config._directFallback
+    ) {
+      try {
+        const cleanPath = (response.config.url || '').replace(/^\/?api\/?/, '/');
+        const fallbackUrl = `${DIRECT_RAILWAY_URL}${cleanPath.startsWith('/') ? '' : '/'}${cleanPath}`;
+        const fallbackConfig = {
+          ...response.config,
+          url: fallbackUrl,
+          baseURL: '',
+          _directFallback: true,
+        };
+        return await axios(fallbackConfig);
+      } catch (e) {
+        return response;
+      }
+    }
     return response;
   },
-  (error) => {
+  async (error) => {
+    const config = error.config;
     const status = error.response ? error.response.status : null;
     const message = error.response?.data?.message || error.message || 'An unexpected error occurred.';
-    const isMutation = error.config && ['post', 'put', 'delete', 'patch'].includes((error.config.method || '').toLowerCase());
+    const isMutation = config && ['post', 'put', 'delete', 'patch'].includes((config.method || '').toLowerCase());
+
+    // If request failed on local /api (e.g. static hosting 404, 502, network error), retry directly on Railway
+    if (
+      config &&
+      !config._directFallback &&
+      (!status || status === 404 || status === 502 || status === 503 || error.code === 'ERR_NETWORK') &&
+      (!config.baseURL || config.baseURL === '/api' || config.baseURL.startsWith('/'))
+    ) {
+      try {
+        const cleanPath = (config.url || '').replace(/^\/?api\/?/, '/');
+        const fallbackUrl = `${DIRECT_RAILWAY_URL}${cleanPath.startsWith('/') ? '' : '/'}${cleanPath}`;
+        const fallbackConfig = {
+          ...config,
+          url: fallbackUrl,
+          baseURL: '',
+          _directFallback: true,
+        };
+        return await axios(fallbackConfig);
+      } catch (fallbackError) {
+        // Continue to error handling below
+      }
+    }
 
     if (status === 401) {
       if (isMutation && toastCallback) {
