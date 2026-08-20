@@ -13,7 +13,6 @@ import {
   PanelLeftOpen,
   PanelLeftClose,
   ChevronRight,
-  ChevronLeft
 } from 'lucide-react';
 import { Role, User } from '../types';
 import { getAvatarUrl, handleAvatarError } from '../utils/avatar';
