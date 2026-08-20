@@ -1,0 +1,26 @@
+# Netlify API Proxy Rewrites (Bypasses browser CORS completely)
+/api/users/login       https://gymmanagementsystem-production-72ab.up.railway.app/user/login     200!
+/api/user/login        https://gymmanagementsystem-production-72ab.up.railway.app/user/login     200!
+/api/users/register    https://gymmanagementsystem-production-72ab.up.railway.app/user/register  200!
+/api/user/register     https://gymmanagementsystem-production-72ab.up.railway.app/user/register  200!
+/api/users             https://gymmanagementsystem-production-72ab.up.railway.app/user           200!
+/api/user              https://gymmanagementsystem-production-72ab.up.railway.app/user           200!
+/api/users/*           https://gymmanagementsystem-production-72ab.up.railway.app/user/:splat   200!
+/api/user/*            https://gymmanagementsystem-production-72ab.up.railway.app/user/:splat   200!
+/api/members           https://gymmanagementsystem-production-72ab.up.railway.app/member         200!
+/api/member            https://gymmanagementsystem-production-72ab.up.railway.app/member         200!
+/api/members/*         https://gymmanagementsystem-production-72ab.up.railway.app/member/:splat 200!
+/api/member/*          https://gymmanagementsystem-production-72ab.up.railway.app/member/:splat 200!
+/api/trainers          https://gymmanagementsystem-production-72ab.up.railway.app/trainer        200!
+/api/trainer           https://gymmanagementsystem-production-72ab.up.railway.app/trainer        200!
+/api/trainers/*        https://gymmanagementsystem-production-72ab.up.railway.app/trainer/:splat 200!
+/api/trainer/*         https://gymmanagementsystem-production-72ab.up.railway.app/trainer/:splat 200!
+/api/payments          https://gymmanagementsystem-production-72ab.up.railway.app/payment        200!
+/api/payment           https://gymmanagementsystem-production-72ab.up.railway.app/payment        200!
+/api/payments/*        https://gymmanagementsystem-production-72ab.up.railway.app/payment/:splat 200!
+/api/payment/*         https://gymmanagementsystem-production-72ab.up.railway.app/payment/:splat 200!
+/api/*                 https://gymmanagementsystem-production-72ab.up.railway.app/:splat        200!
+
+# SPA client-side fallback
+/*                     /index.html                                                               200
+
