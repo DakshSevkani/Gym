@@ -3,17 +3,20 @@ import axios from 'axios';
 // Remote Railway backend endpoint fallback
 export const DIRECT_RAILWAY_URL = 'https://gymmanagementsystem-production-72ab.up.railway.app';
 
-// Resolve base API URL from environment variable or fallback to local proxy '/api'
-const envApiUrl = import.meta.env.VITE_BACKEND_URL || import.meta.env.VITE_API_BASE_URL;
-
+// Resolve base API URL: Default to relative '/api' so all requests route through the host proxy
 function determineBaseURL() {
-  if (!envApiUrl) return '/api';
-  const clean = envApiUrl.trim().replace(/\/$/, '');
-  // If explicitly pointed to railway backend, use railway base without /api
+  const env = (import.meta.env.VITE_BACKEND_URL || import.meta.env.VITE_API_BASE_URL || '').trim();
+
+  // If env contains localhost, 127.0.0.1, or port 3000, always use relative '/api'
+  if (!env || env.includes('localhost') || env.includes('127.0.0.1') || env.includes(':3000') || env === '/api' || env.startsWith(':')) {
+    return '/api';
+  }
+
+  const clean = env.replace(/\/$/, '');
   if (clean.includes('railway.app') && !clean.endsWith('/api')) {
     return clean;
   }
-  return clean;
+  return clean || '/api';
 }
 
 const resolvedBaseURL = determineBaseURL();
