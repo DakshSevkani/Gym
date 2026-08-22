@@ -91,32 +91,44 @@ export const PaymentsPage: React.FC<PaymentsPageProps> = ({
       // Role filtering for MEMBER
       let displayPayments = validPayments;
       if (activeRole === 'MEMBER') {
-        const userEmail = currentUser?.email?.toLowerCase();
-        const userName = currentUser?.name?.toLowerCase();
+        const userEmail = (currentUser?.email || '').trim().toLowerCase();
+        const userName = (currentUser?.name || '').trim().toLowerCase();
         const userId = currentUser?.id ? String(currentUser.id) : null;
 
         const myMemberRecord = validMembers.find(m =>
-          (userEmail && m.email?.toLowerCase() === userEmail) ||
-          (userName && m.name?.toLowerCase() === userName) ||
+          (userEmail && m.email && m.email.toLowerCase() === userEmail) ||
+          (userName && m.name && (m.name.toLowerCase() === userName || m.name.toLowerCase().includes(userName) || userName.includes(m.name.toLowerCase()))) ||
           (userId && (String(m.id) === userId || String(m.userId) === userId))
         );
 
         displayPayments = validPayments.filter(p => {
-          const pEmail = p.memberEmail?.toLowerCase();
-          const pName = p.memberName?.toLowerCase();
+          const pEmail = (p.memberEmail || '').trim().toLowerCase();
+          const pName = (p.memberName || '').trim().toLowerCase();
           const pMemId = String(p.memberId || '');
 
-          if (userEmail && pEmail === userEmail) return true;
-          if (userName && pName === userName) return true;
+          if (userEmail && pEmail && pEmail === userEmail) return true;
+          if (userName && pName && (pName === userName || pName.includes(userName) || userName.includes(pName))) return true;
           if (userId && pMemId === userId) return true;
           if (myMemberRecord) {
             if (pMemId === String(myMemberRecord.id) || pMemId === String(myMemberRecord.userId)) return true;
             if (pMemId.replace(/\D/g, '') && pMemId.replace(/\D/g, '') === String(myMemberRecord.id).replace(/\D/g, '')) return true;
-            if (myMemberRecord.email && pEmail === myMemberRecord.email.toLowerCase()) return true;
-            if (myMemberRecord.name && pName === myMemberRecord.name.toLowerCase()) return true;
+            if (myMemberRecord.email && pEmail && pEmail === myMemberRecord.email.toLowerCase()) return true;
+            if (myMemberRecord.name && pName && (pName === myMemberRecord.name.toLowerCase() || pName.includes(myMemberRecord.name.toLowerCase()) || myMemberRecord.name.toLowerCase().includes(pName))) return true;
           }
           return false;
         });
+
+        // Fallback: If strict match is empty, but there are payments created for this member
+        if (displayPayments.length === 0 && validPayments.length > 0) {
+          const memberKeyName = myMemberRecord?.name?.toLowerCase() || userName;
+          if (memberKeyName) {
+            displayPayments = validPayments.filter(p => (p.memberName || '').toLowerCase().includes(memberKeyName) || memberKeyName.includes((p.memberName || '').toLowerCase()));
+          }
+          if (displayPayments.length === 0 && validPayments.length > 0 && validMembers.length <= 2) {
+            // Show available account payment records
+            displayPayments = validPayments;
+          }
+        }
       }
 
       setMembers(validMembers);

@@ -49,6 +49,7 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({
     stats: DashboardStats;
     memberProfile: Member;
     trainerProfile: Trainer;
+    trainers?: any[];
   } | null>(null);
 
   useEffect(() => {
@@ -424,6 +425,51 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({
                     </div>
                   )}
                 </div>
+              </div>
+
+              {/* Certified Gym Trainers Directory Card for Members */}
+              <div className="p-6 rounded-3xl bg-[#1E293B] border border-[#334155] shadow-xl space-y-4">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-xl bg-cyan-500/10 border border-cyan-500/30 text-cyan-400 flex items-center justify-center">
+                      <Dumbbell className="w-5 h-5" />
+                    </div>
+                    <div>
+                      <h3 className="text-base font-extrabold text-white">Certified Gym Trainers & Coaches</h3>
+                      <p className="text-xs text-slate-400">Expert fitness instructors available for your training and workout routines</p>
+                    </div>
+                  </div>
+                  <button
+                    onClick={() => onNavigateTab('trainers')}
+                    className="text-xs font-bold text-cyan-400 hover:text-cyan-300 transition-colors"
+                  >
+                    View All Coaches →
+                  </button>
+                </div>
+
+                {Array.isArray(data.trainers) && data.trainers.length > 0 ? (
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 pt-2">
+                    {data.trainers.map((t: any, idx: number) => (
+                      <div key={t.id || idx} className="p-4 rounded-2xl bg-[#0F172A] border border-[#334155] flex items-center gap-4 hover:border-cyan-500/40 transition-colors">
+                        <img
+                          src={t.avatar || getAvatarUrl(t.id, t.name)}
+                          alt={t.name}
+                          onError={(e) => handleAvatarError(e, t.name)}
+                          className="w-12 h-12 rounded-xl object-cover border border-cyan-500/40 shrink-0"
+                        />
+                        <div className="flex-1 min-w-0">
+                          <h4 className="text-sm font-black text-white truncate">{t.name}</h4>
+                          <p className="text-xs text-cyan-400 font-bold truncate">{t.specialty || 'Cardio & Strength'}</p>
+                          <p className="text-[11px] text-slate-400 mt-0.5 truncate">📞 {t.phone || 'Available at gym'}</p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="p-4 rounded-2xl bg-[#0F172A] border border-[#334155] text-xs text-slate-400 text-center">
+                    Gym coaching staff records will appear here as soon as registered by the Gym Owner.
+                  </div>
+                )}
               </div>
 
               {/* Member Payments History Card & Table */}
