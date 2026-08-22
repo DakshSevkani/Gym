@@ -132,11 +132,35 @@ export const PaymentsPage: React.FC<PaymentsPageProps> = ({
     }
   };
 
-  const handleOpenAddModal = () => {
-    if (members.length > 0) {
-      const initialMem = members.find(m => m.id === selectedMemberId) || members[0];
-      setSelectedMemberId(initialMem.id);
-      setFormPlanName(initialMem.tier || 'STANDARD PASS');
+  const handleOpenAddModal = (defaultMemberId?: string) => {
+    let targetMem: Member | undefined;
+    if (defaultMemberId && typeof defaultMemberId === 'string') {
+      targetMem = members.find(m => String(m.id) === String(defaultMemberId));
+    }
+    if (!targetMem && activeRole === 'MEMBER') {
+      const userEmail = (currentUser?.email || '').trim().toLowerCase();
+      const userName = (currentUser?.name || '').trim().toLowerCase();
+      const userId = currentUser?.id ? String(currentUser.id) : null;
+      targetMem = members.find(m =>
+        (userEmail && m.email && m.email.toLowerCase() === userEmail) ||
+        (userName && m.name && (m.name.toLowerCase() === userName || m.name.toLowerCase().includes(userName) || userName.includes(m.name.toLowerCase()))) ||
+        (userId && (String(m.id) === userId || String(m.userId) === userId))
+      );
+    }
+    if (!targetMem && members.length > 0) {
+      targetMem = members[0];
+    }
+
+    if (targetMem) {
+      setSelectedMemberId(targetMem.id);
+      setFormPlanName(targetMem.tier || 'STANDARD PASS');
+      setManualMemberName(targetMem.name);
+      setManualMemberEmail(targetMem.email);
+    } else {
+      setSelectedMemberId('');
+      setFormPlanName('STANDARD PASS');
+      setManualMemberName('');
+      setManualMemberEmail('');
     }
     setFormAmount('2000');
     setShowAddModal(true);
@@ -144,9 +168,17 @@ export const PaymentsPage: React.FC<PaymentsPageProps> = ({
 
   const handleMemberSelectChange = (memId: string) => {
     setSelectedMemberId(memId);
-    const chosen = members.find(m => m.id === memId);
-    if (chosen) {
-      if (chosen.tier) setFormPlanName(chosen.tier);
+    if (memId === 'NEW_MANUAL') {
+      setManualMemberName('');
+      setManualMemberEmail('');
+      setFormPlanName('STANDARD PASS');
+    } else {
+      const chosen = members.find(m => String(m.id) === String(memId));
+      if (chosen) {
+        if (chosen.tier) setFormPlanName(chosen.tier);
+        setManualMemberName(chosen.name);
+        setManualMemberEmail(chosen.email);
+      }
     }
   };
 
@@ -158,10 +190,26 @@ export const PaymentsPage: React.FC<PaymentsPageProps> = ({
     }
 
     try {
-      const selectedMember = members.find(m => String(m.id) === String(selectedMemberId)) || members[0];
-      const memberName = selectedMember ? selectedMember.name : (manualMemberName.trim() || 'Gym Member');
-      const memberEmail = selectedMember ? selectedMember.email : (manualMemberEmail.trim() || '');
-      const memberId = selectedMember ? String(selectedMember.id) : (selectedMemberId || `mem_${Date.now()}`);
+      let memberName = '';
+      let memberEmail = '';
+      let memberId = '';
+      let planName = formPlanName || 'STANDARD PASS';
+
+      if (selectedMemberId && selectedMemberId !== 'NEW_MANUAL') {
+        const selectedMember = members.find(m => String(m.id) === String(selectedMemberId));
+        if (selectedMember) {
+          memberId = String(selectedMember.id);
+          memberName = selectedMember.name;
+          memberEmail = selectedMember.email;
+          planName = formPlanName || selectedMember.tier || 'STANDARD PASS';
+        }
+      }
+
+      if (!memberName) {
+        memberName = manualMemberName.trim() || 'Gym Member';
+        memberEmail = manualMemberEmail.trim() || '';
+        memberId = selectedMemberId && selectedMemberId !== 'NEW_MANUAL' ? selectedMemberId : `mem_${Date.now()}`;
+      }
 
       await paymentApi.createPayment({
         memberId,
@@ -169,11 +217,11 @@ export const PaymentsPage: React.FC<PaymentsPageProps> = ({
         memberEmail,
         amount: Number(formAmount),
         paymentMethod: formMethod,
-        planName: formPlanName || (selectedMember?.tier || 'STANDARD PASS'),
+        planName,
         paymentDate: new Date().toISOString().split('T')[0]
       });
 
-      onShowToast(`Payment of ₹${Number(formAmount).toLocaleString('en-IN')} recorded successfully!`, 'success');
+      onShowToast(`Payment of ₹${Number(formAmount).toLocaleString('en-IN')} for ${memberName} recorded successfully!`, 'success');
       setShowAddModal(false);
       setManualMemberName('');
       setManualMemberEmail('');
@@ -235,15 +283,26 @@ export const PaymentsPage: React.FC<PaymentsPageProps> = ({
           </p>
         </div>
 
-        {activeRole === 'OWNER' && (
-          <button
-            onClick={handleOpenAddModal}
-            className="px-5 py-3 rounded-2xl bg-emerald-600 text-white font-black text-xs hover:bg-emerald-500 transition-all shadow-lg shadow-emerald-500/20 flex items-center justify-center gap-2 shrink-0"
-          >
-            <Plus className="w-4 h-4 stroke-[3]" />
-            <span>Record Payment</span>
-          </button>
-        )}
+        <div className="flex items-center gap-3">
+          {activeRole === 'MEMBER' && (
+            <button
+              onClick={() => handleOpenAddModal()}
+              className="px-5 py-3 rounded-2xl bg-emerald-600 text-white font-black text-xs hover:bg-emerald-500 transition-all shadow-lg shadow-emerald-500/20 flex items-center justify-center gap-2 shrink-0"
+            >
+              <Plus className="w-4 h-4 stroke-[3]" />
+              <span>Pay Membership Fee</span>
+            </button>
+          )}
+          {activeRole === 'OWNER' && (
+            <button
+              onClick={() => handleOpenAddModal()}
+              className="px-5 py-3 rounded-2xl bg-emerald-600 text-white font-black text-xs hover:bg-emerald-500 transition-all shadow-lg shadow-emerald-500/20 flex items-center justify-center gap-2 shrink-0"
+            >
+              <Plus className="w-4 h-4 stroke-[3]" />
+              <span>Record Payment</span>
+            </button>
+          )}
+        </div>
       </div>
 
       {/* Revenue Metric Summary Banner */}
@@ -408,19 +467,50 @@ export const PaymentsPage: React.FC<PaymentsPageProps> = ({
 
             <form onSubmit={handleRecordPayment} className="space-y-4 text-xs">
               {members.length > 0 ? (
-                <div>
-                  <label className="font-bold text-slate-400 block mb-1">Select Member</label>
-                  <select
-                    value={selectedMemberId}
-                    onChange={(e) => handleMemberSelectChange(e.target.value)}
-                    className="w-full bg-[#0F172A] border border-[#334155] rounded-xl px-4 py-2.5 text-slate-200 focus:outline-none focus:border-emerald-500 font-bold"
-                  >
-                    {members.map((m) => (
-                      <option key={m.id} value={m.id}>
-                        {m.name} ({m.tier || m.membershipType || 'Active Member'}) {m.email ? `- ${m.email}` : ''}
-                      </option>
-                    ))}
-                  </select>
+                <div className="space-y-3">
+                  <div>
+                    <label className="font-bold text-slate-400 block mb-1">Select Member Account</label>
+                    <select
+                      value={selectedMemberId}
+                      onChange={(e) => handleMemberSelectChange(e.target.value)}
+                      className="w-full bg-[#0F172A] border border-[#334155] rounded-xl px-4 py-2.5 text-slate-200 focus:outline-none focus:border-emerald-500 font-bold"
+                    >
+                      {members.map((m) => (
+                        <option key={m.id} value={m.id}>
+                          {m.name} ({m.tier || m.membershipType || 'Active Member'}) {m.email ? `• ${m.email}` : ''}
+                        </option>
+                      ))}
+                      {activeRole === 'OWNER' && (
+                        <option value="NEW_MANUAL">+ Enter Other / New Member Details...</option>
+                      )}
+                    </select>
+                  </div>
+
+                  {selectedMemberId === 'NEW_MANUAL' && (
+                    <div className="space-y-3 p-3.5 rounded-2xl bg-[#0F172A] border border-[#334155]">
+                      <div>
+                        <label className="font-bold text-slate-400 block mb-1">Member Full Name</label>
+                        <input
+                          type="text"
+                          required
+                          value={manualMemberName}
+                          onChange={(e) => setManualMemberName(e.target.value)}
+                          placeholder="e.g. sachin"
+                          className="w-full bg-[#1E293B] border border-[#334155] rounded-xl px-4 py-2 text-slate-200 focus:outline-none focus:border-emerald-500 font-medium"
+                        />
+                      </div>
+                      <div>
+                        <label className="font-bold text-slate-400 block mb-1">Member Email (Optional)</label>
+                        <input
+                          type="email"
+                          value={manualMemberEmail}
+                          onChange={(e) => setManualMemberEmail(e.target.value)}
+                          placeholder="e.g. sachin@gmail.com"
+                          className="w-full bg-[#1E293B] border border-[#334155] rounded-xl px-4 py-2 text-slate-200 focus:outline-none focus:border-emerald-500 font-medium"
+                        />
+                      </div>
+                    </div>
+                  )}
                 </div>
               ) : (
                 <>
@@ -431,7 +521,7 @@ export const PaymentsPage: React.FC<PaymentsPageProps> = ({
                       required
                       value={manualMemberName}
                       onChange={(e) => setManualMemberName(e.target.value)}
-                      placeholder="e.g. Krishna"
+                      placeholder="e.g. sachin"
                       className="w-full bg-[#0F172A] border border-[#334155] rounded-xl px-4 py-2.5 text-slate-200 focus:outline-none focus:border-emerald-500 font-medium"
                     />
                   </div>

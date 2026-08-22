@@ -4,7 +4,7 @@ export const memberApi = {
   // POST /members
   createMember: async (memberData) => {
     try {
-      const payload: any = {
+      const payload = {
         name: memberData.name,
         phone: memberData.phone || '',
         membershipType: memberData.membershipType || memberData.tier || 'Pro Quarter',
@@ -146,7 +146,7 @@ export const memberApi = {
   // PUT /members/:id
   updateMember: async (id, memberData) => {
     try {
-      const payload: any = {
+      const payload = {
         id: Number(id) || id,
         name: memberData.name,
         phone: memberData.phone || '',
