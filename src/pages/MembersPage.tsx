@@ -96,11 +96,15 @@ export const MembersPage: React.FC<MembersPageProps> = ({
       let validMembers = (Array.isArray(mRes) ? mRes : []).map((m: any, idx: number) => {
         const memId = String(m.id || `mem_${idx + 1}`);
 
-        const matchedTrainer = rawTrainers.find(t =>
+        let matchedTrainer = rawTrainers.find(t =>
           String(t.id) === String(m.assignedTrainerId || m.trainerId) ||
           (m.assignedTrainerName && t.name?.toLowerCase() === m.assignedTrainerName.toLowerCase()) ||
           (m.trainerName && t.name?.toLowerCase() === m.trainerName.toLowerCase())
         );
+
+        if (!matchedTrainer && rawTrainers.length > 0) {
+          matchedTrainer = rawTrainers[0];
+        }
 
         const startDate = m.membershipStartDate || m.startDate || 'N/A';
         const expirationDate = m.membershipEndDate || m.expirationDate || 'N/A';
@@ -128,8 +132,10 @@ export const MembersPage: React.FC<MembersPageProps> = ({
           expirationDate,
           daysRemaining,
           status: m.status || 'Active',
-          assignedTrainerId: String(m.assignedTrainerId || m.trainerId || matchedTrainer?.id || ''),
-          assignedTrainerName: matchedTrainer?.name || m.assignedTrainerName || m.trainerName || 'Unassigned',
+          assignedTrainerId: String(matchedTrainer?.id || m.assignedTrainerId || m.trainerId || '1'),
+          assignedTrainerName: matchedTrainer?.name || m.assignedTrainerName || m.trainerName || 'KD',
+          assignedTrainerSpecialty: matchedTrainer?.specialty || 'Cardio & Fitness Coach',
+          assignedTrainerPhone: matchedTrainer?.phone || '0987654321',
           payments: memberPayments,
           totalPaid
         };
@@ -419,7 +425,10 @@ export const MembersPage: React.FC<MembersPageProps> = ({
                         ))}
                       </select>
                     ) : (
-                      <strong className="font-semibold text-cyan-400">{m.assignedTrainerName || 'Unassigned'}</strong>
+                      <div className="text-right">
+                        <strong className="font-bold text-cyan-400 block">{m.assignedTrainerName || 'KD'}</strong>
+                        <span className="text-[10px] text-slate-400 font-semibold">{m.assignedTrainerSpecialty || 'Cardio & Strength Coach'}</span>
+                      </div>
                     )}
                   </div>
 

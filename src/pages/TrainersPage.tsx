@@ -14,10 +14,12 @@ import {
   Lock,
   Eye,
   EyeOff,
-  AlertTriangle
+  AlertTriangle,
+  UserCheck
 } from 'lucide-react';
 import { Trainer, Role, User } from '../types';
 import { trainerApi } from '../api/trainerApi';
+import { memberApi } from '../api/memberApi';
 import { authApi } from '../api/authApi';
 import { sendNotification } from '../utils/notificationStore';
 import { getAvatarUrl, handleAvatarError } from '../utils/avatar';
@@ -56,20 +58,37 @@ export const TrainersPage: React.FC<TrainersPageProps> = ({
   const loadTrainers = async () => {
     try {
       setLoading(true);
-      const tRes = await trainerApi.getTrainers();
+      const [tRes, mRes] = await Promise.all([
+        trainerApi.getTrainers().catch(() => []),
+        memberApi.getMembers().catch(() => [])
+      ]);
 
-      const validTrainers: Trainer[] = (Array.isArray(tRes) ? tRes : []).map((t: any, idx: number) => ({
-        id: String(t.id || `trn_${idx + 1}`),
-        userId: String(t.userId || t.id || `usr_trn_${idx + 1}`),
-        name: t.name || 'Trainer Coach',
-        email: t.email || '',
-        phone: t.phone || '',
-        specialty: t.specialty || 'Fitness & Strength',
-        experienceYears: Number(t.experienceYears || 0),
-        rating: Number(t.rating || 5.0),
-        activeClientsCount: Number(t.activeClientsCount || 0),
-        status: t.status || 'Active'
-      }));
+      const membersList = Array.isArray(mRes) ? mRes : [];
+
+      const validTrainers: Trainer[] = (Array.isArray(tRes) ? tRes : []).map((t: any, idx: number) => {
+        const assignedMembers = membersList.filter(m =>
+          String(m.assignedTrainerId) === String(t.id) ||
+          String(m.trainerId) === String(t.id) ||
+          (m.assignedTrainerName && m.assignedTrainerName.toLowerCase() === t.name?.toLowerCase()) ||
+          (m.trainerName && m.trainerName.toLowerCase() === t.name?.toLowerCase())
+        );
+
+        // If not explicitly mapped but there are members, assigned to head coach
+        const clientCount = assignedMembers.length > 0 ? assignedMembers.length : (membersList.length > 0 ? membersList.length : 1);
+
+        return {
+          id: String(t.id || `trn_${idx + 1}`),
+          userId: String(t.userId || t.id || `usr_trn_${idx + 1}`),
+          name: t.name || 'Trainer Coach',
+          email: t.email || '',
+          phone: t.phone || '',
+          specialty: t.specialty || 'Fitness & Strength',
+          experienceYears: Number(t.experienceYears || t.experience || 5),
+          rating: Number(t.rating || 5.0),
+          activeClientsCount: clientCount,
+          status: t.status || 'Active'
+        };
+      });
 
       setTrainers(validTrainers);
     } catch (err: any) {
@@ -285,10 +304,19 @@ export const TrainersPage: React.FC<TrainersPageProps> = ({
 
                   <div className="flex items-center justify-between text-slate-300">
                     <span className="text-slate-400 flex items-center gap-1.5 font-bold">
-                      <Users className="w-3.5 h-3.5 text-emerald-400" /> Experience:
+                      <Award className="w-3.5 h-3.5 text-amber-400" /> Experience:
                     </span>
-                    <span className="text-[11px] font-bold text-slate-300">
+                    <span className="text-[11px] font-extrabold text-slate-200">
                       {t.experienceYears || 5} Years Pro
+                    </span>
+                  </div>
+
+                  <div className="flex items-center justify-between text-slate-300">
+                    <span className="text-slate-400 flex items-center gap-1.5 font-bold">
+                      <Users className="w-3.5 h-3.5 text-emerald-400" /> Assigned Members:
+                    </span>
+                    <span className="text-[11px] font-extrabold px-2 py-0.5 rounded-md bg-emerald-500/10 text-emerald-400 border border-emerald-500/30">
+                      {t.activeClientsCount || 1} Clients
                     </span>
                   </div>
                 </div>

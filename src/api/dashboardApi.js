@@ -64,7 +64,7 @@ export const dashboardApi = {
       }
     }
 
-    // Find payments specific to this member
+    // Find payments strictly specific to this member
     let memberPayments = [];
     if (foundMember) {
       const fId = String(foundMember.id || '');
@@ -84,14 +84,9 @@ export const dashboardApi = {
         if (fEmail && pEmail && pEmail === fEmail) return true;
         return false;
       });
-
-      // If no payments matched by strict filter, and member is sachin with VIP Annual and payment 15 exists
-      if (memberPayments.length === 0 && paymentsList.length > 0) {
-        memberPayments = paymentsList.filter(p => (p.memberName || '').toLowerCase() === fName || String(p.memberId) === fId);
-      }
     }
 
-    const latestPayment = memberPayments.length > 0 ? memberPayments[0] : (paymentsList.length > 0 ? paymentsList[0] : null);
+    const latestPayment = memberPayments.length > 0 ? memberPayments[0] : null;
 
     // Find trainer profile if logged in user is trainer
     const foundTrainer = trainersList.find(t =>

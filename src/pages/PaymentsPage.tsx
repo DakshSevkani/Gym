@@ -117,18 +117,6 @@ export const PaymentsPage: React.FC<PaymentsPageProps> = ({
           }
           return false;
         });
-
-        // Fallback: If strict match is empty, but there are payments created for this member
-        if (displayPayments.length === 0 && validPayments.length > 0) {
-          const memberKeyName = myMemberRecord?.name?.toLowerCase() || userName;
-          if (memberKeyName) {
-            displayPayments = validPayments.filter(p => (p.memberName || '').toLowerCase().includes(memberKeyName) || memberKeyName.includes((p.memberName || '').toLowerCase()));
-          }
-          if (displayPayments.length === 0 && validPayments.length > 0 && validMembers.length <= 2) {
-            // Show available account payment records
-            displayPayments = validPayments;
-          }
-        }
       }
 
       setMembers(validMembers);
