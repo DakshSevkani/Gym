@@ -1,9 +1,17 @@
-import API from './axios.js';
+import API, { getAuthToken } from './axios.js';
 
 export const userApi = {
   // GET /user (Railway endpoint is /user)
   getUsers: async () => {
     try {
+      if (!getAuthToken()) {
+        const stored = localStorage.getItem('powerhouse_user');
+        if (stored) {
+          try { return [JSON.parse(stored)]; } catch (e) {}
+        }
+        return [];
+      }
+
       let response;
       try {
         response = await API.get('/user');

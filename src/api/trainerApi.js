@@ -1,4 +1,4 @@
-import API from './axios.js';
+import API, { getAuthToken } from './axios.js';
 
 export const trainerApi = {
   // POST /trainers
@@ -10,6 +10,9 @@ export const trainerApi = {
   // GET /trainers
   getTrainers: async () => {
     try {
+      if (!getAuthToken()) {
+        return [];
+      }
       const response = await API.get('/trainers');
       return Array.isArray(response.data) ? response.data : [];
     } catch (err) {

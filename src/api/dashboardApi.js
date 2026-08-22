@@ -1,4 +1,4 @@
-import API from './axios.js';
+import API, { getAuthToken } from './axios.js';
 import { memberApi } from './memberApi.js';
 import { trainerApi } from './trainerApi.js';
 import { paymentApi } from './paymentApi.js';
@@ -9,11 +9,13 @@ export const dashboardApi = {
   getDashboardData: async () => {
     // 1. Get stats overview from /dashboard
     let dashStats = { totalMembers: 0, totalTrainers: 0, totalRevenue: 0 };
-    try {
-      const res = await API.get('/dashboard');
-      dashStats = res.data || dashStats;
-    } catch (e) {
-      console.warn('Dashboard endpoint error:', e);
+    if (getAuthToken()) {
+      try {
+        const res = await API.get('/dashboard');
+        dashStats = res.data || dashStats;
+      } catch (e) {
+        console.warn('Dashboard endpoint error:', e);
+      }
     }
 
     // 2. Parallel data fetching with resilient fallbacks

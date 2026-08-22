@@ -29,6 +29,11 @@ function determineBaseURL() {
 
 const resolvedBaseURL = determineBaseURL();
 
+export const getAuthToken = () => {
+  if (typeof window === 'undefined') return '';
+  return localStorage.getItem('powerhouse_jwt_token') || localStorage.getItem('jwt_token') || localStorage.getItem('token') || '';
+};
+
 // Centralized Axios instance connecting through API proxy or hosted backend
 const API = axios.create({
   baseURL: resolvedBaseURL,
@@ -50,7 +55,7 @@ export const setApiCallbacks = (onToast, onLogout) => {
 // Request Interceptor: Automatically attach Bearer token
 API.interceptors.request.use(
   (config) => {
-    const token = localStorage.getItem('powerhouse_jwt_token');
+    const token = getAuthToken();
     if (token) {
       if (config.headers && typeof config.headers.set === 'function') {
         config.headers.set('Authorization', `Bearer ${token}`);

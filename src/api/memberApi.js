@@ -1,4 +1,4 @@
-import API from './axios.js';
+import API, { getAuthToken } from './axios.js';
 
 export const memberApi = {
   // POST /members
@@ -18,6 +18,9 @@ export const memberApi = {
   // GET /members
   getMembers: async () => {
     try {
+      if (!getAuthToken()) {
+        return [];
+      }
       const response = await API.get('/members');
       return Array.isArray(response.data) ? response.data : [];
     } catch (err) {
